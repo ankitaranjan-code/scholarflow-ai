@@ -1,0 +1,47 @@
+/* ── Dashboard Page Layout ── */
+.dashboard-page {
+  display: flex; flex-direction: column;
+  gap: 2rem;
+}
+
+.dash-row {
+  width: 100%;
+}
+
+.dash-hero, .dash-split {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.dash-main { min-width: 0; }
+.dash-sidebar { min-width: 0; }
+
+.bento-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.bento-card {
+  background: var(--surface-high);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  transition: transform var(--transition);
+  animation: fadeIn 0.4s ease-out forwards;
+}
+.bento-card:hover { transform: translateY(-2px); }
+
+.bento-streak { border-left: 3px solid var(--tertiary); }
+.bento-rank { border-left: 3px solid var(--secondary); }
+.bento-points { border-left: 3px solid var(--primary); }
+
+@media (max-width: 900px) {
+  .dash-hero, .dash-split {
+    grid-template-columns: 1fr;
+  }
+  .bento-row {
+    grid-template-columns: 1fr;
+  }
+}

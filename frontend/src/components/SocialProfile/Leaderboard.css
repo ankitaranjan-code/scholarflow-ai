@@ -1,0 +1,80 @@
+.leaderboard-card {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.leaderboard-header {
+  border-bottom: 1px solid var(--outline);
+  padding-bottom: 0.75rem;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-mid);
+  transition: all 0.2s ease;
+}
+
+.leaderboard-item:hover {
+  background: var(--surface-high);
+  transform: translateX(4px);
+}
+
+.is-current-user {
+  background: linear-gradient(90deg, rgba(166, 140, 255, 0.1), transparent);
+  border-left: 3px solid var(--primary);
+}
+
+.leader-rank {
+  font-weight: 800;
+  font-size: 1.125rem;
+  min-width: 2rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.leader-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.leader-name {
+  font-weight: 600;
+  color: var(--text-base);
+}
+
+.leader-level {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.leader-stats {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: right;
+}
+
+.leader-streak {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.leader-points {
+  font-size: 1.125rem;
+}

@@ -1,0 +1,14 @@
+/* ── Profile Page Layout ── */
+.profile-page {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.profile-main { min-width: 0; }
+.profile-sidebar { min-width: 0; }
+
+@media (max-width: 900px) {
+  .profile-page { grid-template-columns: 1fr; }
+}

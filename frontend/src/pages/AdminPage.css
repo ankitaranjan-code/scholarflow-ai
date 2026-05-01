@@ -1,0 +1,97 @@
+.admin-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.admin-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid var(--outline);
+  padding-bottom: 0.5rem;
+}
+
+.admin-tabs .btn-ghost {
+  border-radius: 0;
+  padding: 0.5rem 1rem;
+  opacity: 0.7;
+}
+
+.admin-tabs .btn-ghost.active {
+  opacity: 1;
+  color: var(--primary);
+  border-bottom: 2px solid var(--primary);
+  background: transparent;
+}
+
+.admin-card {
+  padding: 2rem;
+}
+
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 500px;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  margin-top: 1.5rem;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.admin-table th {
+  padding: 1rem;
+  border-bottom: 2px solid var(--outline);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+}
+
+.admin-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--outline);
+  vertical-align: middle;
+}
+
+.admin-table tbody tr:hover {
+  background: var(--surface-high);
+}
+
+.admin-logs {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(0,0,0,0.3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--outline);
+}
+
+.code-block {
+  font-family: monospace;
+  font-size: 0.875rem;
+  white-space: pre-wrap;
+  color: var(--text-secondary);
+}
+
+.settings-section {
+  padding: 1.5rem;
+  background: var(--surface-low);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--outline);
+}

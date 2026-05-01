@@ -1,0 +1,54 @@
+/* ── Performance Graph ── */
+.perf-graph-card { padding: 1.5rem; }
+
+.perf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.perf-stats-row {
+  display: flex; gap: 2rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--surface-low);
+  border-radius: var(--radius-md);
+}
+
+.perf-stat {
+  display: flex; flex-direction: column; gap: 0.125rem;
+}
+
+.perf-stat .t-stat { font-size: 1.5rem; }
+
+.perf-chart-wrap {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.perf-tooltip {
+  background: var(--surface-highest);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.perf-tooltip-label {
+  font-size: 0.6875rem;
+  color: var(--on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.perf-tooltip-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+@media (max-width: 768px) {
+  .perf-stats-row { gap: 1rem; padding: 0.75rem; }
+  .perf-stat .t-stat { font-size: 1.25rem; }
+}

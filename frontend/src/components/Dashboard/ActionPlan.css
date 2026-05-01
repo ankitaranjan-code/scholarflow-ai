@@ -1,0 +1,64 @@
+/* ── Action Plan ── */
+.action-plan { padding: 1.5rem; }
+
+.action-plan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.predicted-badge {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 0.125rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, var(--tertiary-container), rgba(177, 255, 206, 0.05));
+  border-radius: var(--radius-lg);
+  animation: breathe 3s ease-in-out infinite;
+}
+
+.predicted-label {
+  font-size: 0.5625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--tertiary-dim);
+  font-weight: 600;
+}
+
+.predicted-grade {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--tertiary);
+}
+
+.action-list {
+  display: flex; flex-direction: column; gap: 0.75rem;
+}
+
+.action-item {
+  display: flex; align-items: flex-start; gap: 1rem;
+  padding: 0.875rem 1rem;
+  background: var(--surface-low);
+  border-radius: var(--radius-md);
+  animation: fadeIn 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+.action-number {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary-dim);
+  background: var(--primary-container);
+  width: 1.75rem; height: 1.75rem;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.action-text {
+  font-size: 0.875rem;
+  color: var(--on-surface);
+  line-height: 1.5;
+}

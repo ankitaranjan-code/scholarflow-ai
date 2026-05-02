@@ -51,7 +51,15 @@ export default function SocialProfile({ student, badges, cheerCount: initialChee
           {student.displayName || student.display_name}
         </h2>
         <p className="t-muted" style={{ marginTop: '0.25rem' }}>@{student.username}</p>
-        <p className="profile-bio">{student.bio}</p>
+        <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+          {student.institution_type && (
+            <span className="badge badge-primary" style={{ fontSize: '0.75rem' }}>{student.institution_type}</span>
+          )}
+          {student.education_stage && (
+            <span className="badge badge-secondary" style={{ fontSize: '0.75rem' }}>{student.education_stage}</span>
+          )}
+        </div>
+        <p className="profile-bio" style={{ marginTop: '0.75rem' }}>{student.bio}</p>
 
         <div className="profile-stats">
           <div className="profile-stat">

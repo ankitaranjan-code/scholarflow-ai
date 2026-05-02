@@ -163,11 +163,13 @@ export default function DashboardPage({ showToast }) {
           <p className="t-small text-muted" style={{ fontStyle: 'italic' }}>Days of consistent logging</p>
         </div>
         <div className="bento-card bento-rank">
-          <p className="t-eyebrow text-muted">Current Level</p>
-          <p className="t-stat text-secondary" style={{ marginTop: '0.25rem' }}>
-            Lv.{displayStudent.level ?? 1}
+          <p className="t-eyebrow text-muted">Academic Stage</p>
+          <p className="t-stat text-secondary" style={{ marginTop: '0.25rem', fontSize: '1.5rem' }}>
+            {displayStudent.education_stage || 'Class'} {displayStudent.level ?? 1}
           </p>
-          <p className="t-small text-muted" style={{ fontStyle: 'italic' }}>Knowledge Seeker tier</p>
+          <p className="t-small text-muted" style={{ fontStyle: 'italic', textTransform: 'capitalize' }}>
+            {displayStudent.institution_type ? `${displayStudent.institution_type} Student` : 'Institution Student'}
+          </p>
         </div>
         <div className="bento-card bento-points">
           <p className="t-eyebrow text-muted">Total Points</p>

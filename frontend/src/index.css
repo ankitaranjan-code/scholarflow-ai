@@ -289,6 +289,20 @@ h1, h2, h3, h4, h5, h6 { font-family: 'Space Grotesk', sans-serif; color: var(--
 .animate-pulse { animation: pulse 2s ease-in-out infinite; }
 .animate-breathe { animation: breathe 3s ease-in-out infinite; }
 
+.task-spinner {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ── Responsive Container ── */
 .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
 

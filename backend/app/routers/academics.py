@@ -6,8 +6,8 @@ from ..database import get_db
 from ..models.student import Student
 from ..models.academics import AcademicRecord, SubjectScore
 from ..schemas.academics import AcademicRecordCreate, AcademicRecordResponse
-from ..services.ml_service import ml_engine
-from ..services.llm_service import gemini_mentor
+from ..services.ml_service import ml_service
+from ..services.llm_service import llm_service
 from ..schemas.student import PredictionRequest
 
 router = APIRouter()
@@ -61,7 +61,7 @@ async def create_academic_record(student_id: int, record_data: AcademicRecordCre
 
     # 3. Call ML Engine
     try:
-        prediction = ml_engine.predict(features)
+        prediction = ml_service.predict(features)
         predicted_grade = prediction["predicted_grade"]
         confidence = prediction["confidence"]
     except Exception as e:
@@ -149,7 +149,7 @@ async def update_academic_record(student_id: int, record_id: int, record_data: A
     )
 
     try:
-        prediction = ml_engine.predict(features)
+        prediction = ml_service.predict(features)
         predicted_grade = prediction["predicted_grade"]
         confidence = prediction["confidence"]
     except Exception as e:

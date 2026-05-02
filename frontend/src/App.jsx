@@ -35,40 +35,46 @@ function MainApp() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  if (loading) {
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="auth-page" style={{ justifyContent: 'center', alignItems: 'center' }}>
+          <span className="task-spinner" style={{ width: '2rem', height: '2rem' }} />
+        </div>
+      );
+    }
+
+    if (!user) {
+      if (authMode === 'home') {
+        return <HomePage onGetStarted={() => setAuthMode('auth')} />;
+      }
+      return <AuthPage showToast={showToast} onRegisterSuccess={() => setActiveTab('onboarding')} />;
+    }
+
     return (
-      <div className="auth-page" style={{ justifyContent: 'center', alignItems: 'center' }}>
-        <span className="task-spinner" style={{ width: '2rem', height: '2rem' }} />
-      </div>
+      <>
+        <TopBar />
+        <main className="main-content">
+          {(() => {
+            switch (activeTab) {
+              case 'onboarding': return <OnboardingPage showToast={showToast} onComplete={() => setActiveTab('dashboard')} />;
+              case 'dashboard': return <DashboardPage showToast={showToast} />;
+              case 'chat': return <ChatPage />;
+              case 'profile': return <ProfilePage showToast={showToast} />;
+              case 'admin': return <AdminPage showToast={showToast} />;
+              default: return <DashboardPage showToast={showToast} />;
+            }
+          })()}
+        </main>
+        <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      </>
     );
-  }
-
-  if (!user) {
-    if (authMode === 'home') {
-      return <HomePage onGetStarted={() => setAuthMode('auth')} />;
-    }
-    return <AuthPage showToast={showToast} onRegisterSuccess={() => setActiveTab('onboarding')} />;
-  }
-
-  const renderPage = () => {
-    switch (activeTab) {
-      case 'onboarding': return <OnboardingPage showToast={showToast} onComplete={() => setActiveTab('dashboard')} />;
-      case 'dashboard': return <DashboardPage showToast={showToast} />;
-      case 'chat': return <ChatPage />;
-      case 'profile': return <ProfilePage showToast={showToast} />;
-      case 'admin': return <AdminPage showToast={showToast} />;
-      default: return <DashboardPage showToast={showToast} />;
-    }
   };
 
   return (
     <StudentProvider>
       <div className="noise-overlay" />
-      <TopBar />
-      <main className="main-content">
-        {renderPage()}
-      </main>
-      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      {renderContent()}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </StudentProvider>
   );

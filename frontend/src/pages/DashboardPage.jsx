@@ -102,7 +102,7 @@ export default function DashboardPage({ showToast }) {
         <h2 className="t-h2 text-primary">Your Dashboard</h2>
         <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
           <span className="material-symbols-outlined" style={{ fontSize: '1.2rem', marginRight: '0.5rem' }}>add_chart</span>
-          Log Progress
+          Weekly Report
         </button>
       </div>
 
@@ -121,7 +121,7 @@ export default function DashboardPage({ showToast }) {
             <div className="glass-card" style={{ padding: '3rem', textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <span className="material-symbols-outlined text-muted" style={{ fontSize: '4rem', marginBottom: '1rem' }}>insights</span>
               <h3 className="t-h3" style={{ marginBottom: '0.5rem' }}>No Data Logged Yet</h3>
-              <p className="t-muted">Click "Log Progress" above to enter your current marks and generate your first AI prediction!</p>
+              <p className="t-muted">Click "Weekly Report" above to enter your current marks and generate your first AI prediction!</p>
             </div>
           )}
         </div>
@@ -183,7 +183,7 @@ export default function DashboardPage({ showToast }) {
           onClose={() => setIsModalOpen(false)} 
           onSubmit={handleLogProgress}
           loading={isSubmitting}
-          initialSubjects={subjects}
+          initialSubjects={displayStudent.active_subjects || []}
         />
       )}
     </div>

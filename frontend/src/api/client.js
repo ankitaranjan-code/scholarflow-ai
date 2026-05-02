@@ -97,6 +97,26 @@ class ApiClient {
     });
   }
 
+  async updateAcademicRecord(studentId, recordId, data) {
+    return this.request(`/students/${studentId}/academic-records/${recordId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async addActiveSubject(studentId, name) {
+    return this.request(`/students/${studentId}/subjects`, {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    });
+  }
+
+  async deleteActiveSubject(studentId, subjectId) {
+    return this.request(`/students/${studentId}/subjects/${subjectId}`, {
+      method: 'DELETE',
+    });
+  }
+
   async predictPerformance(features) {
     return this.request('/students/predict', { method: 'POST', body: JSON.stringify(features) });
   }

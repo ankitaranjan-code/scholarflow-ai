@@ -17,7 +17,7 @@ export default function DataEntryModal({ onClose, onSubmit, loading, initialSubj
   // If user has previous subjects, use them, otherwise use defaults
   const [subjects, setSubjects] = useState(
     initialSubjects && initialSubjects.length > 0 
-      ? initialSubjects.map(s => ({ subject_name: s.subject_name, internal_marks: s.internal_marks, exam_score: s.exam_score }))
+      ? initialSubjects.map(s => ({ subject_name: s.name || s.subject_name, internal_marks: s.internal_marks || 0, exam_score: s.exam_score || 0 }))
       : DEFAULT_SUBJECTS
   );
 
@@ -42,12 +42,12 @@ export default function DataEntryModal({ onClose, onSubmit, loading, initialSubj
     <div className="modal-overlay">
       <div className="modal-content glass-card animate-fade-in">
         <button className="close-btn material-symbols-outlined" onClick={onClose}>close</button>
-        <h2 className="t-h2 text-primary" style={{ marginBottom: '1.5rem' }}>Log Progress</h2>
+        <h2 className="t-h2 text-primary" style={{ marginBottom: '1.5rem' }}>Weekly Report</h2>
         
         <form onSubmit={handleSubmit} className="data-entry-form">
           <div className="form-row">
             <div className="input-group">
-              <label className="input-label">Record Name (e.g. Month 1)</label>
+              <label className="input-label">Report Name (e.g. Week 1)</label>
               <input type="text" className="input-field" value={semester} onChange={e => setSemester(e.target.value)} required />
             </div>
             <div className="input-group">

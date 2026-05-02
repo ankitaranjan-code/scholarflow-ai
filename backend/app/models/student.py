@@ -2,7 +2,7 @@
 Student Model — The core identity table for each user on the platform.
 Stores demographic, socio-economic, and account-level information.
 """
-from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, Text
+from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, Text, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from ..database import Base
@@ -42,6 +42,22 @@ class Student(Base):
     routines = relationship("Routine", back_populates="student", cascade="all, delete-orphan")
     badges = relationship("StudentBadge", back_populates="student", cascade="all, delete-orphan")
     chat_sessions = relationship("ChatSession", back_populates="student", cascade="all, delete-orphan")
+    active_subjects = relationship("ActiveSubject", back_populates="student", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Student(id={self.id}, username='{self.username}')>"
+
+
+class ActiveSubject(Base):
+    """Tracks the subjects a student is currently studying."""
+    __tablename__ = "active_subjects"
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id"), nullable=False, index=True)
+    name = Column(String(100), nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    student = relationship("Student", back_populates="active_subjects")
+
+    def __repr__(self):
+        return f"<ActiveSubject(student_id={self.student_id}, name='{self.name}')>"

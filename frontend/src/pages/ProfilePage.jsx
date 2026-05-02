@@ -2,6 +2,8 @@
  * ProfilePage — Social profile with badge collection and routine tracker.
  * Passes showToast for cheer feedback.
  */
+import SubjectManager from '../components/Profile/SubjectManager';
+import DataHistory from '../components/Profile/DataHistory';
 import SocialProfile from '../components/SocialProfile/SocialProfile';
 import Leaderboard from '../components/SocialProfile/Leaderboard';
 import RoutineTracker from '../components/Gamification/RoutineTracker';
@@ -10,7 +12,7 @@ import { studentProfile, badges, routineTasks } from '../data/mockData';
 import './ProfilePage.css';
 
 export default function ProfilePage({ showToast }) {
-  const { student, studentId, updatePoints } = useStudent();
+  const { student, studentId, updatePoints, fetchStudent } = useStudent();
   const displayStudent = student || studentProfile;
 
   const handleTaskComplete = (taskId, pointsEarned, badgeUnlocked) => {
@@ -18,6 +20,12 @@ export default function ProfilePage({ showToast }) {
     showToast?.(`+${pointsEarned} points earned!`, 'points');
     if (badgeUnlocked) {
       setTimeout(() => showToast?.(`🏆 Badge unlocked: ${badgeUnlocked}!`, 'badge'), 1500);
+    }
+  };
+
+  const handleSubjectsUpdated = () => {
+    if (studentId) {
+      fetchStudent(studentId);
     }
   };
 
@@ -30,6 +38,19 @@ export default function ProfilePage({ showToast }) {
           cheerCount={42}
           showToast={showToast}
         />
+        
+        <SubjectManager 
+          subjects={displayStudent.active_subjects || []} 
+          studentId={studentId} 
+          onSubjectsUpdated={handleSubjectsUpdated}
+          showToast={showToast}
+        />
+
+        <DataHistory 
+          studentId={studentId} 
+          showToast={showToast} 
+        />
+
         <div style={{ marginTop: '2rem' }}>
           <Leaderboard />
         </div>

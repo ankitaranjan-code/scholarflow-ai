@@ -41,6 +41,8 @@ def get_student(student_id: int, db: Session = Depends(get_db)):
 
 from ..schemas.student import StudentOnboarding
 
+from ..models.student import ActiveSubject
+
 @router.put("/{student_id}/onboarding", response_model=StudentResponse)
 def update_student_onboarding(student_id: int, data: StudentOnboarding, db: Session = Depends(get_db)):
     """Complete user onboarding and set initial variables for ML predictions."""
@@ -49,11 +51,14 @@ def update_student_onboarding(student_id: int, data: StudentOnboarding, db: Sess
         raise HTTPException(status_code=404, detail="Student not found")
     
     student.level = data.level
-    # In a real app, we'd add fields like daily_study_hours to the Student model
-    # For now, we update parents info as they are on the Student model
     student.parents_income_bracket = data.parents_income_bracket
     student.parents_education = data.parents_education
     
+    # Save active subjects
+    for subj_name in data.subjects:
+        active_subj = ActiveSubject(student_id=student.id, name=subj_name)
+        db.add(active_subj)
+
     db.commit()
     db.refresh(student)
     return student
@@ -145,3 +150,32 @@ def get_mood_logs(student_id: int, limit: int = 7, db: Session = Depends(get_db)
             .limit(limit)
             .all())
     return logs
+
+
+# ── Active Subject Management ──
+from pydantic import BaseModel
+
+class SubjectAddRequest(BaseModel):
+    name: str
+
+@router.post("/{student_id}/subjects")
+def add_active_subject(student_id: int, data: SubjectAddRequest, db: Session = Depends(get_db)):
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    active_subj = ActiveSubject(student_id=student.id, name=data.name)
+    db.add(active_subj)
+    db.commit()
+    db.refresh(active_subj)
+    return active_subj
+
+@router.delete("/{student_id}/subjects/{subject_id}")
+def delete_active_subject(student_id: int, subject_id: int, db: Session = Depends(get_db)):
+    subj = db.query(ActiveSubject).filter(ActiveSubject.id == subject_id, ActiveSubject.student_id == student_id).first()
+    if not subj:
+        raise HTTPException(status_code=404, detail="Subject not found")
+    
+    db.delete(subj)
+    db.commit()
+    return {"status": "deleted"}

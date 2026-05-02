@@ -5,6 +5,13 @@ from datetime import datetime
 
 
 # ── Student Schemas ──
+class ActiveSubjectResponse(BaseModel):
+    id: int
+    name: str
+    
+    class Config:
+        from_attributes = True
+
 class StudentBase(BaseModel):
     username: str
     email: str
@@ -27,6 +34,7 @@ class StudentOnboarding(BaseModel):
     sleep_hours: float = 8.0
     parents_income_bracket: Optional[str] = "middle"
     parents_education: Optional[str] = "high_school"
+    subjects: list[str] = ["Mathematics", "Physics", "Chemistry", "Biology"]
 
 class StudentResponse(StudentBase):
     id: int
@@ -36,6 +44,7 @@ class StudentResponse(StudentBase):
     level: int
     is_admin: bool
     created_at: datetime
+    active_subjects: list[ActiveSubjectResponse] = []
 
     class Config:
         from_attributes = True

@@ -2,7 +2,7 @@
  * App.jsx — Root component with tab-based navigation.
  * Wrapped with StudentProvider for global state management.
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 import { StudentProvider } from './context/StudentContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -20,9 +20,15 @@ import OnboardingPage from './pages/OnboardingPage';
 
 function MainApp() {
   const { user, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(null);
   const [authMode, setAuthMode] = useState('home'); // 'home' or 'auth'
   const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    if (user && !activeTab) {
+      setActiveTab(user.is_admin ? 'admin' : 'dashboard');
+    }
+  }, [user, activeTab]);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });

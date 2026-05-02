@@ -11,53 +11,43 @@ const accentMap = {
   tertiary: { fill: 'fill-tertiary', badge: 'badge-tertiary', label: 'Peak' },
 };
 
-export default function SubjectCards({ subjects, onScoreChange }) {
-  const handleInputChange = (subjectId, e) => {
-    const value = e.target.value;
-    if (value !== '' && onScoreChange) {
-      onScoreChange(subjectId, 'score', value);
-    }
-  };
+export default function SubjectCards({ subjects }) {
+  if (!subjects || subjects.length === 0) {
+    return (
+      <div className="subject-section animate-fade-in" style={{ animationDelay: '0.15s' }}>
+        <h3 className="t-h3">Current Subjects</h3>
+        <p className="t-muted">No subject data logged yet. Click 'Log Progress' to get started.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="subject-section animate-fade-in" style={{ animationDelay: '0.15s' }}>
       <div className="subject-section-header">
         <div>
-          <h3 className="t-h3">Subject-wise Tracker</h3>
-          <p className="t-muted">Enter marks to trigger ML prediction in real-time</p>
+          <h3 className="t-h3">Current Subjects</h3>
+          <p className="t-muted">Latest performance across all modules</p>
         </div>
       </div>
 
       <div className="subjects-grid">
         {subjects.map((subj) => {
-          const a = accentMap[subj.accent] || accentMap.primary;
+          const a = accentMap[subj.color_accent] || accentMap.primary;
+          // Subj from API: subject_name, percentage, status, color_accent, icon_name
           return (
-            <div key={subj.id} className={`subject-card subject-border-${subj.accent}`}>
+            <div key={subj.id} className={`subject-card subject-border-${subj.color_accent}`}>
               <div className="subject-card-header">
-                <div className={`subject-icon-wrap icon-${subj.accent}`}>
-                  <span className="material-symbols-outlined">{subj.icon}</span>
+                <div className={`subject-icon-wrap icon-${subj.color_accent}`}>
+                  <span className="material-symbols-outlined">{subj.icon_name || 'book'}</span>
                 </div>
                 <div className="subject-meta">
-                  <span className={`badge ${a.badge}`}>{a.label}</span>
-                  <span className="subject-score font-headline">{subj.score}%</span>
+                  <span className={`badge ${a.badge}`}>{subj.status.toUpperCase()}</span>
+                  <span className="subject-score font-headline">{subj.percentage}%</span>
                 </div>
               </div>
-              <h4 className="t-h4">{subj.name}</h4>
-              <div className="subject-input-group">
-                <label className="input-label">Score Entry</label>
-                <input
-                  className="input-field"
-                  type="number"
-                  min="0"
-                  max="100"
-                  placeholder="Enter marks"
-                  defaultValue={subj.score}
-                  onChange={(e) => handleInputChange(subj.id, e)}
-                  id={`subject-score-${subj.id}`}
-                />
-              </div>
+              <h4 className="t-h4" style={{ marginBottom: '1rem' }}>{subj.subject_name}</h4>
               <div className="progress-track">
-                <div className={`progress-fill ${a.fill}`} style={{ width: `${subj.score}%` }} />
+                <div className={`progress-fill ${a.fill}`} style={{ width: `${subj.percentage}%` }} />
               </div>
             </div>
           );

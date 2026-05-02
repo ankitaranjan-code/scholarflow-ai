@@ -10,7 +10,7 @@ The central entry point that wires up:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base, SessionLocal
-from .routers import students, gamification, chat, auth, admin
+from .routers import students, gamification, chat, auth, admin, academics
 from .models import *  # Ensure all models are registered with Base
 
 # ── Create Tables ──
@@ -38,6 +38,7 @@ app.include_router(students.router)
 app.include_router(gamification.router)
 app.include_router(chat.router)
 app.include_router(admin.router)
+app.include_router(academics.router, prefix="/api", tags=["Academics"])
 
 
 # ── Seed Default Badges on Startup ──

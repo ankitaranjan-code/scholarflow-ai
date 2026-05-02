@@ -86,6 +86,17 @@ class ApiClient {
     });
   }
 
+  async getAcademicRecords(studentId) {
+    return this.request(`/students/${studentId}/academic-records`);
+  }
+
+  async submitAcademicRecord(studentId, data) {
+    return this.request(`/students/${studentId}/academic-records`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
   async predictPerformance(features) {
     return this.request('/students/predict', { method: 'POST', body: JSON.stringify(features) });
   }

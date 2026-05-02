@@ -8,11 +8,25 @@ export default function OnboardingPage({ onComplete, showToast }) {
   const [loading, setLoading] = useState(false);
 
   // Form State
+  const [institutionType, setInstitutionType] = useState('School');
+  const [educationStage, setEducationStage] = useState('High School');
   const [level, setLevel] = useState(1);
   const [dailyStudyHours, setDailyStudyHours] = useState(2.0);
   const [sleepHours, setSleepHours] = useState(8.0);
   const [parentsIncome, setParentsIncome] = useState('middle');
   const [parentsEducation, setParentsEducation] = useState('high_school');
+
+  // Handle cascading dropdown resets
+  const handleInstitutionChange = (e) => {
+    const val = e.target.value;
+    setInstitutionType(val);
+    if (val === 'School') {
+      setEducationStage('High School');
+    } else {
+      setEducationStage('Undergraduate');
+    }
+    setLevel(1);
+  };
 
   const [subjects, setSubjects] = useState(['Mathematics', 'Physics', 'Chemistry', 'Biology']);
   const [newSubject, setNewSubject] = useState('');
@@ -37,6 +51,8 @@ export default function OnboardingPage({ onComplete, showToast }) {
     setLoading(true);
     try {
       await api.updateOnboarding(user.id, {
+        institution_type: institutionType,
+        education_stage: educationStage,
         level: Number(level),
         daily_study_hours: parseFloat(dailyStudyHours),
         sleep_hours: parseFloat(sleepHours),
@@ -62,12 +78,40 @@ export default function OnboardingPage({ onComplete, showToast }) {
         </div>
 
         <form onSubmit={handleSubmit} className="onboarding-form">
+          <div className="form-row">
+            <div className="input-group">
+              <label className="input-label">Institution Type</label>
+              <select className="input-field" value={institutionType} onChange={handleInstitutionChange} style={{ height: 'auto', padding: '0.75rem' }}>
+                <option value="School">School</option>
+                <option value="College">College</option>
+              </select>
+            </div>
+            <div className="input-group">
+              <label className="input-label">Education Stage</label>
+              <select className="input-field" value={educationStage} onChange={e => setEducationStage(e.target.value)} style={{ height: 'auto', padding: '0.75rem' }}>
+                {institutionType === 'School' ? (
+                  <>
+                    <option value="Primary">Primary School</option>
+                    <option value="High School">High School</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="Undergraduate">Undergraduate</option>
+                    <option value="Postgraduate">Postgraduate</option>
+                  </>
+                )}
+              </select>
+            </div>
+          </div>
+
           <div className="input-group">
-            <label className="input-label">Current Academic Level (Grade/Year)</label>
+            <label className="input-label">
+              {institutionType === 'School' ? 'Current Class (1-12)' : 'Current Year (1-5)'}
+            </label>
             <input 
               type="number" 
               min="1" 
-              max="12" 
+              max={institutionType === 'School' ? 12 : 5}
               className="input-field" 
               value={level} 
               onChange={e => setLevel(e.target.value)} 

@@ -29,11 +29,13 @@ class Student(Base):
     has_internet_access = Column(Boolean, default=True)
     travel_time_minutes = Column(Integer, default=0)          # Commute to school
 
-    # ── Gamification Aggregate Fields ──
+    # ── Gamification & Academic Tier Fields ──
     total_points = Column(Integer, default=0)
     current_streak = Column(Integer, default=0)
     longest_streak = Column(Integer, default=0)
-    level = Column(Integer, default=1)
+    institution_type = Column(String(50), default="")  # e.g. "School", "College"
+    education_stage = Column(String(50), default="")   # e.g. "Primary", "High School", "Undergraduate"
+    level = Column(Integer, default=1)                 # Class (1-12) or Year (1-5)
 
     # ── Relationships ──
     academic_records = relationship("AcademicRecord", back_populates="student", cascade="all, delete-orphan")

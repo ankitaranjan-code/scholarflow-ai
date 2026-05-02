@@ -29,6 +29,8 @@ class StudentCreate(StudentBase):
     pass
 
 class StudentOnboarding(BaseModel):
+    institution_type: Optional[str] = ""
+    education_stage: Optional[str] = ""
     level: int = 1
     daily_study_hours: float = 2.0
     sleep_hours: float = 8.0
@@ -41,6 +43,8 @@ class StudentResponse(StudentBase):
     total_points: int
     current_streak: int
     longest_streak: int
+    institution_type: str
+    education_stage: str
     level: int
     is_admin: bool
     created_at: datetime

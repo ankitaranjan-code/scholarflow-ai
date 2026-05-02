@@ -50,6 +50,8 @@ def update_student_onboarding(student_id: int, data: StudentOnboarding, db: Sess
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
     
+    student.institution_type = data.institution_type
+    student.education_stage = data.education_stage
     student.level = data.level
     student.parents_income_bracket = data.parents_income_bracket
     student.parents_education = data.parents_education

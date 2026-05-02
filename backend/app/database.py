@@ -5,6 +5,9 @@ Uses SQLAlchemy with SQLite for local development.
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+from dotenv import load_dotenv
+
+load_dotenv() # Load variables from .env if present
 
 # Fallback to local SQLite if no DATABASE_URL is provided (e.g. from Supabase)
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./scholarflow.db")

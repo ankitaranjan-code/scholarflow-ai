@@ -10,6 +10,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
 
   const tabs = [
     { id: 'dashboard', icon: 'insights', label: 'Growth' },
+    { id: 'academics', icon: 'school', label: 'Academics' },
     { id: 'chat', icon: 'auto_awesome', label: 'AI Chat' },
     { id: 'profile', icon: 'person', label: 'Profile' },
   ];

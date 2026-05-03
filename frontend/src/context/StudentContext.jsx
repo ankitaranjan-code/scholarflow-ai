@@ -11,6 +11,7 @@ const StudentContext = createContext(null);
 export function StudentProvider({ children }) {
   const { user } = useAuth();
   const [student, setStudent] = useState(null);
+  const [routines, setRoutines] = useState([]);
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -24,6 +25,25 @@ export function StudentProvider({ children }) {
       setLoading(true);
       const data = await api.getStudent(id);
       setStudent(data);
+      
+      // Also fetch routines globally for notifications
+      try {
+        const studentRoutines = await api.getRoutines(id);
+        if (studentRoutines && studentRoutines.length > 0) {
+          setRoutines(studentRoutines[0].tasks.map(t => ({
+            id: t.id,
+            title: t.title,
+            category: t.category,
+            icon: t.icon_name,
+            points: t.points_value,
+            timeSlot: t.time_slot,
+            completed: t.is_completed_today
+          })));
+        }
+      } catch (e) {
+        console.warn('Failed to fetch routines globally:', e);
+      }
+
       setError(null);
       return data;
     } catch (err) {
@@ -39,6 +59,7 @@ export function StudentProvider({ children }) {
       fetchStudent(user.id);
     } else {
       setStudent(null);
+      setRoutines([]);
     }
   }, [user, fetchStudent]);
 
@@ -71,6 +92,7 @@ export function StudentProvider({ children }) {
 
   const value = {
     student,
+    routines,
     prediction,
     loading,
     error,
@@ -79,6 +101,7 @@ export function StudentProvider({ children }) {
     runPrediction,
     updatePoints,
     setStudent,
+    setRoutines,
   };
 
   return (

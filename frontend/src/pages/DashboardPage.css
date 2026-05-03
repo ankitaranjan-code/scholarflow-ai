@@ -1,7 +1,8 @@
 /* ── Dashboard Page Layout ── */
 .dashboard-page {
   display: flex; flex-direction: column;
-  gap: 2rem;
+  gap: 2.5rem;
+  padding-bottom: 5rem;
 }
 
 .dash-row {
@@ -10,8 +11,8 @@
 
 .dash-hero, .dash-split {
   display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 1.5rem;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 2rem;
   align-items: start;
 }
 
@@ -21,27 +22,50 @@
 .bento-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .bento-card {
-  background: var(--surface-high);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem;
-  transition: transform var(--transition);
-  animation: fadeIn 0.4s ease-out forwards;
+  background: var(--surface-low);
+  border-radius: var(--radius-xl);
+  padding: 1.75rem;
+  transition: all var(--transition);
+  animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  border: 1px solid var(--outline);
+  position: relative;
+  overflow: hidden;
 }
-.bento-card:hover { transform: translateY(-2px); }
 
-.bento-streak { border-left: 3px solid var(--tertiary); }
-.bento-rank { border-left: 3px solid var(--secondary); }
-.bento-points { border-left: 3px solid var(--primary); }
+.bento-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
 
-@media (max-width: 900px) {
+.bento-card:hover { 
+  transform: translateY(-8px);
+  border-color: var(--outline-variant);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.bento-streak { border-bottom: 4px solid var(--tertiary); }
+.bento-rank { border-bottom: 4px solid var(--secondary); }
+.bento-points { border-bottom: 4px solid var(--primary); }
+
+@media (max-width: 1024px) {
   .dash-hero, .dash-split {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 768px) {
   .bento-row {
     grid-template-columns: 1fr;
   }
+  .dashboard-page {
+    gap: 1.5rem;
+  }
 }
+

@@ -23,10 +23,10 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# ── CORS (allow React dev server) ──
+# ── CORS (allow React dev server and Vercel) ──
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:[0-9]+)?",
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,7 +38,7 @@ app.include_router(students.router)
 app.include_router(gamification.router)
 app.include_router(chat.router)
 app.include_router(admin.router)
-app.include_router(academics.router, prefix="/api", tags=["Academics"])
+app.include_router(academics.router, prefix="/api/students", tags=["Academics"])
 
 
 # ── Seed Default Badges on Startup ──

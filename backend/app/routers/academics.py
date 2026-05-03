@@ -29,23 +29,19 @@ async def create_academic_record(student_id: int, record_data: AcademicRecordCre
     if not record_data.subjects:
         raise HTTPException(status_code=400, detail="Must provide at least one subject score")
     
-    total_internal = sum(s.internal_marks for s in record_data.subjects)
-    total_exam = sum(s.exam_score for s in record_data.subjects)
-    avg_internal = total_internal / len(record_data.subjects)
-    avg_exam = total_exam / len(record_data.subjects)
-    
-    # Calculate an overall percentage for the record based on subject averages
-    # Assuming each subject has internal and exam, and max is 100 for each (200 total per subject)
-    # The max_marks from the schema is per section (internal/exam), usually 100.
-    avg_total_pct = ((avg_internal + avg_exam) / 200.0) * 100
+    # Calculate an overall percentage for the record
+    # exam_score = obtained, max_marks = total
+    total_obtained = sum(s.exam_score for s in record_data.subjects)
+    total_max = sum(s.max_marks for s in record_data.subjects)
+    avg_total_pct = (total_obtained / total_max * 100) if total_max > 0 else 0
 
     # 2. Prepare ML Features
     # In a real app, some of these would be dynamic from other tables (like sleep, mood).
     # For this dashboard update, we are taking them from the AcademicRecordCreate (study hours) 
     # and student profile.
     features = PredictionRequest(
-        internal_marks=avg_internal,
-        exam_scores=avg_exam,
+        internal_marks=avg_total_pct,
+        exam_scores=avg_total_pct,
         attendance_pct=record_data.attendance_pct,
         daily_study_hours=record_data.daily_study_hours,
         task_completion_rate=record_data.task_completion_rate,
@@ -87,7 +83,7 @@ async def create_academic_record(student_id: int, record_data: AcademicRecordCre
     # 5. Save Subject Scores
     for subj in record_data.subjects:
         # Determine status/color dynamically
-        pct = ((subj.internal_marks + subj.exam_score) / (subj.max_marks * 2)) * 100
+        pct = (subj.exam_score / subj.max_marks * 100) if subj.max_marks > 0 else 0
         status = "steady"
         color = "primary"
         if pct < 75:

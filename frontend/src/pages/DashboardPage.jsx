@@ -12,12 +12,12 @@ import SubjectCards from '../components/Dashboard/SubjectCards';
 import ActionPlan from '../components/Dashboard/ActionPlan';
 import RoutineTracker from '../components/Gamification/RoutineTracker';
 import DataEntryModal from '../components/Dashboard/DataEntryModal';
-import RoutineManagement from '../components/Dashboard/RoutineManagement';
-import { notificationService } from '../services/notificationService';
-import {
-  insights,
-} from '../data/mockData';
+import RoutineSetupModal from '../components/Dashboard/RoutineSetupModal';
+
 import './DashboardPage.css';
+import mascotImg from '../assets/mascot.png';
+import stickersImg from '../assets/stickers.png';
+
 
 /**
  * Generate personalized routine tasks based on the student's active subjects.
@@ -49,30 +49,28 @@ function buildRoutineTasks(activeSubjects = []) {
 }
 
 export default function DashboardPage({ showToast }) {
-  const { student, updatePoints, studentId } = useStudent();
+  const { student, updatePoints, studentId, setRoutines } = useStudent();
 
   const [records, setRecords] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [predictionResult, setPredictionResult] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isMgmtOpen, setIsMgmtOpen] = useState(false);
+  const [isRoutineModalOpen, setIsRoutineModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeRoutine, setActiveRoutine] = useState(null);
+  const [savedRoutineTasks, setSavedRoutineTasks] = useState(null);
 
   const displayStudent = student || {};
 
-  const fetchRoutine = useCallback(async () => {
-    if (!studentId) return;
-    try {
-      const routines = await api.getGamificationRoutines(studentId);
-      if (routines.length > 0) {
-        setActiveRoutine(routines[0]);
-      }
-    } catch (err) {
-      console.warn('Failed to fetch routines:', err);
+  // Sync local routine tasks to global context so notifications work
+  useEffect(() => {
+    if (savedRoutineTasks) {
+      setRoutines(savedRoutineTasks);
+    } else {
+      setRoutines([]);
     }
-  }, [studentId]);
+  }, [savedRoutineTasks, setRoutines]);
+
 
   const fetchAcademicData = useCallback(async () => {
     setIsLoading(true);
@@ -93,6 +91,26 @@ export default function DashboardPage({ showToast }) {
           ]
         });
       }
+
+      // Fetch custom routines
+      try {
+        const routines = await api.getRoutines(studentId);
+        if (routines && routines.length > 0) {
+          const activeRoutine = routines[0];
+          setSavedRoutineTasks(activeRoutine.tasks.map(t => ({
+            id: t.id,
+            routineId: activeRoutine.id,
+            title: t.title,
+            category: t.category,
+            icon: t.icon_name,
+            points: t.points_value,
+            timeSlot: t.time_slot,
+            completed: t.is_completed_today
+          })));
+        }
+      } catch (e) {
+        console.error('Failed to fetch routines', e);
+      }
     } catch (err) {
       console.error('Failed to fetch academic records:', err);
     } finally {
@@ -103,53 +121,8 @@ export default function DashboardPage({ showToast }) {
   useEffect(() => {
     if (studentId) {
       fetchAcademicData();
-      fetchRoutine();
     }
-  }, [studentId, fetchAcademicData, fetchRoutine]);
-
-  // Notification Check Interval
-  useEffect(() => {
-    if (activeRoutine?.tasks) {
-      // Request permission once
-      notificationService.requestPermission();
-
-      const interval = setInterval(() => {
-        notificationService.checkAndNotify(activeRoutine.tasks, (msg) => showToast?.(msg, 'info'));
-      }, 60000); // Check every minute
-
-      return () => clearInterval(interval);
-    }
-  }, [activeRoutine, showToast]);
-
-  const handleSaveRoutine = async (tasks) => {
-    setIsSubmitting(true);
-    try {
-      const routineData = {
-        name: "My Daily Routine",
-        description: "Customized by user",
-        tasks: tasks.map(t => ({
-          title: t.title,
-          category: t.category,
-          time_slot: t.time_slot,
-          points_value: t.points_value || 20,
-        }))
-      };
-
-      if (activeRoutine) {
-        await api.updateGamificationRoutine(studentId, activeRoutine.id, routineData);
-      } else {
-        await api.createGamificationRoutine(studentId, routineData);
-      }
-      
-      showToast?.('Routine updated successfully!', 'success');
-      setIsMgmtOpen(false);
-      await fetchRoutine();
-    } catch (err) {
-      showToast?.('Failed to save routine', 'error');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  }, [studentId, fetchAcademicData]);
 
   const handleLogProgress = async (data) => {
     setIsSubmitting(true);
@@ -186,20 +159,55 @@ export default function DashboardPage({ showToast }) {
     ? Math.round(trajectoryData.reduce((s, d) => s + (d.score || 0), 0) / trajectoryData.length)
     : 0;
 
+  // Generate Dynamic Insights
+  let dashboardInsights = [];
+  if (records.length === 0) {
+    dashboardInsights.push({
+      type: "info",
+      title: "Welcome to ScholarFlow",
+      message: "Log your first weekly report to generate personalized AI insights about your performance.",
+      icon: "insights"
+    });
+  } else {
+    const latestRecord = records[records.length - 1];
+    const criticalSubjects = latestRecord.subject_scores.filter(s => s.status === 'critical');
+    const peakSubjects = latestRecord.subject_scores.filter(s => s.status === 'peak');
+
+    if (criticalSubjects.length > 0) {
+      dashboardInsights.push({
+        type: "warning",
+        title: "Needs Attention",
+        message: `Your score in ${criticalSubjects.map(s => s.subject_name).join(', ')} needs attention.`,
+        tip: `Focus on ${criticalSubjects[0].subject_name} this week.`,
+        icon: "warning"
+      });
+    }
+    if (peakSubjects.length > 0) {
+      dashboardInsights.push({
+        type: "success",
+        title: "Mastery Reached",
+        message: `You are performing excellently in ${peakSubjects.map(s => s.subject_name).join(', ')}. Keep it up!`,
+        icon: "check_circle"
+      });
+    }
+    if (dashboardInsights.length === 0) {
+      dashboardInsights.push({
+        type: "info",
+        title: "Steady Progress",
+        message: "You are maintaining a steady pace. Keep up the good work and stick to your routines!",
+        icon: "trending_up"
+      });
+    }
+  }
+
   return (
     <div className="dashboard-page">
       <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem 0' }}>
         <h2 className="t-h2 text-primary">Your Dashboard</h2>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button className="btn btn-secondary" onClick={() => setIsMgmtOpen(true)}>
-            <span className="material-symbols-outlined" style={{ fontSize: '1.2rem', marginRight: '0.5rem' }}>settings_suggest</span>
-            Setup Routine
-          </button>
-          <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
-            <span className="material-symbols-outlined" style={{ fontSize: '1.2rem', marginRight: '0.5rem' }}>add_chart</span>
-            Weekly Report
-          </button>
-        </div>
+        <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
+          <span className="material-symbols-outlined" style={{ fontSize: '1.2rem', marginRight: '0.5rem' }}>add_chart</span>
+          Weekly Report
+        </button>
       </div>
 
       {/* Row 1: Performance Graph + Insights */}
@@ -214,15 +222,15 @@ export default function DashboardPage({ showToast }) {
               loading={isLoading}
             />
           ) : (
-            <div className="glass-card" style={{ padding: '3rem', textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <span className="material-symbols-outlined text-muted" style={{ fontSize: '4rem', marginBottom: '1rem' }}>insights</span>
-              <h3 className="t-h3" style={{ marginBottom: '0.5rem' }}>No Data Logged Yet</h3>
-              <p className="t-muted">Click "Weekly Report" above to enter your current marks and generate your first AI prediction!</p>
+            <div className="glass-card" style={{ padding: '3rem', textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+              <img src={mascotImg} alt="Scholar Mascot" className="sticker animate-float" style={{ width: '180px', marginBottom: '1.5rem' }} />
+              <h3 className="t-h3" style={{ marginBottom: '0.5rem' }}>Your Journey Starts Here!</h3>
+              <p className="t-muted">Click "Weekly Report" above to enter your current marks and let me analyze your growth trajectory!</p>
             </div>
           )}
         </div>
         <aside className="dash-sidebar">
-          <InsightCards insights={insights} />
+          <InsightCards insights={dashboardInsights} />
         </aside>
       </section>
 
@@ -253,39 +261,17 @@ export default function DashboardPage({ showToast }) {
         </div>
         <aside className="dash-sidebar">
           <RoutineTracker
-            tasks={activeRoutine?.tasks || []}
+            tasks={savedRoutineTasks}
             totalPoints={displayStudent.total_points ?? 0}
             studentId={studentId}
             onTaskComplete={handleTaskComplete}
+            onSetupClick={() => setIsRoutineModalOpen(true)}
+            onRoutineDeleted={() => {
+              setSavedRoutineTasks(null);
+              showToast?.('Routine deleted. Create a new one anytime!', 'success');
+            }}
           />
         </aside>
-      </section>
-
-      {/* Row 4: Academic Progress Analysis */}
-      <section className="dash-row">
-        <div className="glass-card" style={{ padding: '2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h3 className="t-h3">Academic Progress Analysis</h3>
-            <span className="badge badge-tertiary">Live Insights</span>
-          </div>
-          
-          <div className="academic-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
-            {(subjects.length > 0 ? subjects : (displayStudent.active_subjects || [])).map((s, i) => (
-              <div key={i} className="progress-stat-card" style={{ background: 'var(--surface-mid)', padding: '1.25rem', borderRadius: '16px' }}>
-                <p className="t-body" style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{s.subject_name || s.name}</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <div style={{ flex: 1, height: '8px', background: 'var(--surface-low)', borderRadius: '4px' }}>
-                    <div style={{ width: `${s.percentage || 0}%`, height: '100%', background: 'var(--secondary)', borderRadius: '4px' }} />
-                  </div>
-                  <span className="font-headline" style={{ fontSize: '1.25rem' }}>{s.percentage || 0}%</span>
-                </div>
-                <p className="t-small text-muted" style={{ marginTop: '0.5rem' }}>
-                  {s.percentage > 80 ? '🔥 Performing exceptionally well' : s.percentage > 60 ? '📈 Steady progress' : '⚠️ Needs more focus'}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* Bento Stats Row */}
@@ -323,12 +309,26 @@ export default function DashboardPage({ showToast }) {
           initialSubjects={displayStudent.active_subjects || []}
         />
       )}
-      {isMgmtOpen && (
-        <RoutineManagement
-          currentTasks={activeRoutine?.tasks || []}
-          onSave={handleSaveRoutine}
-          onCancel={() => setIsMgmtOpen(false)}
-          loading={isSubmitting}
+
+      {isRoutineModalOpen && (
+        <RoutineSetupModal
+          isOpen={isRoutineModalOpen}
+          onClose={() => setIsRoutineModalOpen(false)}
+          studentId={studentId}
+          activeSubjects={displayStudent.active_subjects || []}
+          onSave={(newRoutine) => {
+            setSavedRoutineTasks(newRoutine.tasks.map(t => ({
+              id: t.id,
+              routineId: newRoutine.id,
+              title: t.title,
+              category: t.category,
+              icon: t.icon_name,
+              points: t.points_value,
+              timeSlot: t.time_slot,
+              completed: t.is_completed_today
+            })));
+            showToast?.('Routine saved successfully!', 'success');
+          }}
         />
       )}
     </div>

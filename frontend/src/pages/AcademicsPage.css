@@ -1,0 +1,34 @@
+.academics-page {
+  padding: 1rem 2rem 4rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.academics-header {
+  margin-bottom: 2rem;
+}
+
+.academics-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.academics-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+/* Make subject cards bigger inside academics page if needed */
+.academics-section .subject-card {
+  padding: 2rem;
+}

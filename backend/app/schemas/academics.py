@@ -4,7 +4,7 @@ from datetime import datetime
 
 class SubjectScoreBase(BaseModel):
     subject_name: str
-    internal_marks: float
+    internal_marks: float = 0.0
     exam_score: float
     max_marks: float = 100.0
 

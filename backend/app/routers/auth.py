@@ -19,8 +19,13 @@ router = APIRouter(prefix="/api/auth", tags=["Auth"])
 @router.post("/register", response_model=StudentResponse, status_code=status.HTTP_201_CREATED)
 def register(data: RegisterRequest, db: Session = Depends(get_db)):
     """Register a new student."""
+    from sqlalchemy import func
+    
+    clean_username = data.username.strip().lower()
+    clean_email = data.email.strip().lower()
+    
     existing_user = db.query(Student).filter(
-        (Student.username == data.username) | (Student.email == data.email)
+        (func.lower(Student.username) == clean_username) | (func.lower(Student.email) == clean_email)
     ).first()
     if existing_user:
         raise HTTPException(
@@ -30,8 +35,8 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
 
     hashed_password = get_password_hash(data.password)
     new_student = Student(
-        username=data.username,
-        email=data.email,
+        username=clean_username,
+        email=clean_email,
         display_name=data.display_name,
         password_hash=hashed_password
     )
@@ -43,7 +48,12 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
 @router.post("/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """Login to get a JWT access token."""
-    user = db.query(Student).filter(Student.username == form_data.username).first()
+    username_input = form_data.username.strip().lower()
+    
+    # Use func.lower for case-insensitive matching
+    from sqlalchemy import func
+    user = db.query(Student).filter(func.lower(Student.username) == username_input).first()
+    
     if not user or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

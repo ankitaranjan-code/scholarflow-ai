@@ -134,26 +134,30 @@ class ApiClient {
     return this.request('/gamification/leaderboard');
   }
 
-  async getGamificationRoutines(studentId) {
+  async getRoutines(studentId) {
     return this.request(`/gamification/${studentId}/routines`);
   }
 
-  async createGamificationRoutine(studentId, data) {
+  async createRoutine(studentId, data) {
     return this.request(`/gamification/${studentId}/routines`, { method: 'POST', body: JSON.stringify(data) });
-  }
-
-  async updateGamificationRoutine(studentId, routineId, data) {
-    return this.request(`/gamification/${studentId}/routines/${routineId}`, { method: 'PUT', body: JSON.stringify(data) });
-  }
-
-  async deleteGamificationRoutine(studentId, routineId) {
-    return this.request(`/gamification/${studentId}/routines/${routineId}`, { method: 'DELETE' });
   }
 
   async completeTask(studentId, taskId) {
     return this.request(`/gamification/${studentId}/complete-task`, {
       method: 'POST',
       body: JSON.stringify({ task_id: taskId }),
+    });
+  }
+
+  async deleteRoutine(studentId, routineId) {
+    return this.request(`/gamification/${studentId}/routines/${routineId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async deleteTask(studentId, routineId, taskId) {
+    return this.request(`/gamification/${studentId}/routines/${routineId}/tasks/${taskId}`, {
+      method: 'DELETE',
     });
   }
 
@@ -181,6 +185,13 @@ class ApiClient {
     return this.request(`/chat/${studentId}/sessions/${sessionId}/message`, {
       method: 'POST',
       body: JSON.stringify({ content, mode }),
+    });
+  }
+
+  async generateRoutine(description) {
+    return this.request('/chat/generate-routine', {
+      method: 'POST',
+      body: JSON.stringify({ description }),
     });
   }
 

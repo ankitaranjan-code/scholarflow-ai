@@ -7,6 +7,7 @@ import { useStudent } from '../../context/StudentContext';
 import { useAuth } from '../../context/AuthContext';
 import { studentProfile } from '../../data/mockData';
 import './TopBar.css';
+import mascotImg from '../../assets/mascot.png';
 
 export default function TopBar() {
   const { student, fetchStudent } = useStudent();
@@ -28,7 +29,10 @@ export default function TopBar() {
             )}
             <span className="avatar-status-dot" />
           </div>
-          <h1 className="topbar-brand font-headline">ScholarFlow AI</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <h1 className="topbar-brand font-headline">ScholarFlow AI</h1>
+            <img src={mascotImg} alt="Mascot" className="sticker animate-float" style={{ width: '32px', height: '32px' }} />
+          </div>
         </div>
         <div className="topbar-right">
           <span className="points-badge">

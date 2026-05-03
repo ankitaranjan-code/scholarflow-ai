@@ -40,3 +40,18 @@ class ChatContextData(BaseModel):
     recent_moods: list[dict]
     current_streak: int
     predicted_grade: str
+
+
+class GenerateRoutineRequest(BaseModel):
+    description: str
+
+
+class RoutineTaskSchema(BaseModel):
+    title: str
+    category: str
+    icon: str
+    points: int
+    timeSlot: str
+
+class GenerateRoutineResponse(BaseModel):
+    tasks: list[RoutineTaskSchema]

@@ -1,0 +1,176 @@
+.routine-modal {
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-tabs {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid var(--surface-mid);
+  padding: 0 2rem;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 1rem 0;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.modal-body {
+  padding: 2rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* ── Add Task Form ── */
+.add-task-form {
+  margin-top: 1.25rem;
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: var(--surface-low);
+  border: 1px dashed var(--surface-mid);
+}
+
+.add-task-options {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.add-task-btn {
+  height: 42px;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+  border-radius: 8px;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.add-task-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Task List ── */
+.tasks-list-section {
+  margin-top: 1.5rem;
+}
+
+.tasks-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--surface-low);
+  border-radius: 10px;
+  border: 1px solid var(--surface-mid);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  animation: slideInTask 0.25s ease;
+}
+
+.task-card:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+@keyframes slideInTask {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.task-card-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.task-card-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.task-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.task-card-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-card-meta {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.task-card-time {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.task-card-cat {
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+/* ── Empty state ── */
+.empty-tasks-hint {
+  margin-top: 2rem;
+  text-align: center;
+  padding: 2rem 1rem;
+  border-radius: 12px;
+  border: 1px dashed var(--surface-mid);
+}
+
+.empty-tasks-hint p {
+  margin-top: 0.5rem;
+}
+
+/* ── Old task-row styles (kept for AI tab compatibility) ── */
+.task-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.task-row .input-field {
+  padding: 0.5rem;
+}

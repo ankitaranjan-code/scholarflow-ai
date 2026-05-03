@@ -70,10 +70,12 @@ def send_message(student_id: int, session_id: int, data: ChatMessageCreate,
         message_type="text",
     )
     db.add(user_msg)
-
+    
     # Update session mode if specified
     if data.mode:
         session.mode = data.mode
+        
+    db.commit() # Commit here to release DB lock before network call
 
     # ── Build context from student data ──
     student = db.query(Student).filter(Student.id == student_id).first()
@@ -106,3 +108,16 @@ def send_message(student_id: int, session_id: int, data: ChatMessageCreate,
     db.commit()
     db.refresh(ai_msg)
     return ai_msg
+
+
+from ..schemas.chat import GenerateRoutineRequest, GenerateRoutineResponse
+
+@router.post("/generate-routine", response_model=GenerateRoutineResponse)
+def generate_routine(data: GenerateRoutineRequest):
+    """
+    Generate a JSON structured routine based on a user's description.
+    """
+    tasks = llm_service.generate_routine(data.description)
+    if not tasks:
+        raise HTTPException(status_code=500, detail="Failed to generate routine")
+    return {"tasks": tasks}

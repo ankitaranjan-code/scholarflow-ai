@@ -2,10 +2,10 @@ import { useState } from 'react';
 import './DataEntryModal.css';
 
 const DEFAULT_SUBJECTS = [
-  { subject_name: 'Mathematics', internal_marks: 0, exam_score: 0 },
-  { subject_name: 'Physics', internal_marks: 0, exam_score: 0 },
-  { subject_name: 'Chemistry', internal_marks: 0, exam_score: 0 },
-  { subject_name: 'Biology', internal_marks: 0, exam_score: 0 },
+  { subject_name: 'Mathematics', exam_score: 0, max_marks: 100 },
+  { subject_name: 'Physics', exam_score: 0, max_marks: 100 },
+  { subject_name: 'Chemistry', exam_score: 0, max_marks: 100 },
+  { subject_name: 'Biology', exam_score: 0, max_marks: 100 },
 ];
 
 export default function DataEntryModal({ onClose, onSubmit, loading, initialSubjects }) {
@@ -17,7 +17,7 @@ export default function DataEntryModal({ onClose, onSubmit, loading, initialSubj
   // If user has previous subjects, use them, otherwise use defaults
   const [subjects, setSubjects] = useState(
     initialSubjects && initialSubjects.length > 0 
-      ? initialSubjects.map(s => ({ subject_name: s.name || s.subject_name, internal_marks: s.internal_marks || 0, exam_score: s.exam_score || 0 }))
+      ? initialSubjects.map(s => ({ subject_name: s.name || s.subject_name, exam_score: s.exam_score || 0, max_marks: s.max_marks || 100 }))
       : DEFAULT_SUBJECTS
   );
 
@@ -68,7 +68,7 @@ export default function DataEntryModal({ onClose, onSubmit, loading, initialSubj
           </div>
 
           <h3 className="t-h3" style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>Subject Marks</h3>
-          <p className="t-small text-muted" style={{ marginBottom: '1rem' }}>Enter scores out of 100.</p>
+          <p className="t-small text-muted" style={{ marginBottom: '1rem' }}>Enter Obtained and Total marks.</p>
           
           <div className="subjects-grid">
             {subjects.map((subj, idx) => (
@@ -77,18 +77,18 @@ export default function DataEntryModal({ onClose, onSubmit, loading, initialSubj
                 <div className="subject-inputs">
                   <input 
                     type="number" 
-                    placeholder="Internal" 
+                    placeholder="Obtained" 
                     className="input-field" 
-                    value={subj.internal_marks} 
-                    onChange={e => handleSubjectChange(idx, 'internal_marks', e.target.value)}
+                    value={subj.exam_score} 
+                    onChange={e => handleSubjectChange(idx, 'exam_score', e.target.value)}
                     required
                   />
                   <input 
                     type="number" 
-                    placeholder="Exam" 
+                    placeholder="Total" 
                     className="input-field" 
-                    value={subj.exam_score} 
-                    onChange={e => handleSubjectChange(idx, 'exam_score', e.target.value)}
+                    value={subj.max_marks} 
+                    onChange={e => handleSubjectChange(idx, 'max_marks', e.target.value)}
                     required
                   />
                 </div>

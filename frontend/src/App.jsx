@@ -10,6 +10,7 @@ import TopBar from './components/Layout/TopBar';
 import BottomNav from './components/Layout/BottomNav';
 import Toast from './components/Layout/Toast';
 import DashboardPage from './pages/DashboardPage';
+import AcademicsPage from './pages/AcademicsPage';
 import ChatPage from './pages/ChatPage';
 import ProfilePage from './pages/ProfilePage';
 import AuthPage from './pages/AuthPage';
@@ -17,12 +18,36 @@ import AdminPage from './pages/AdminPage';
 
 import HomePage from './pages/HomePage';
 import OnboardingPage from './pages/OnboardingPage';
+import { useStudent } from './context/StudentContext';
+import { useTaskNotifier } from './hooks/useTaskNotifier';
+import api from './api/client';
 
-function MainApp() {
+function InnerApp() {
   const { user, loading } = useAuth();
+  const { routines, studentId, updatePoints } = useStudent();
   const [activeTab, setActiveTab] = useState(null);
   const [authMode, setAuthMode] = useState('home'); // 'home' or 'auth'
   const [toast, setToast] = useState(null);
+  const [notificationPrompt, setNotificationPrompt] = useState(null);
+
+  useTaskNotifier(routines, (task) => {
+    // Check if we should notify
+    setNotificationPrompt(task);
+  });
+
+  const handleTaskComplete = async (task) => {
+    try {
+      const result = await api.completeTask(studentId, task.id);
+      updatePoints(result.points_earned);
+      showToast(`+${result.points_earned} points earned!`, 'success');
+      if (result.badge_unlocked) {
+        setTimeout(() => showToast(`🏆 Badge unlocked: ${result.badge_unlocked}!`, 'badge'), 1500);
+      }
+    } catch (e) {
+      showToast('Failed to complete task', 'error');
+    }
+    setNotificationPrompt(null);
+  };
 
   useEffect(() => {
     if (user && !activeTab) {
@@ -59,6 +84,7 @@ function MainApp() {
             switch (activeTab) {
               case 'onboarding': return <OnboardingPage showToast={showToast} onComplete={() => setActiveTab('dashboard')} />;
               case 'dashboard': return <DashboardPage showToast={showToast} />;
+              case 'academics': return <AcademicsPage showToast={showToast} />;
               case 'chat': return <ChatPage />;
               case 'profile': return <ProfilePage showToast={showToast} />;
               case 'admin': return <AdminPage showToast={showToast} />;
@@ -67,23 +93,44 @@ function MainApp() {
           })()}
         </main>
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+        
+        {notificationPrompt && (
+          <div className="notification-prompt glass-card">
+            <div className="notification-prompt-header">
+              <div className="notification-prompt-icon">
+                <span className="material-symbols-outlined">{notificationPrompt.icon || 'notifications_active'}</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <p className="t-eyebrow text-primary" style={{ margin: 0 }}>Task Reminder</p>
+                <h4 className="t-h4" style={{ margin: 0 }}>{notificationPrompt.title}</h4>
+              </div>
+            </div>
+            <p className="t-small text-muted">Hey! It's time for this task. Have you started or finished it yet?</p>
+            <div className="notification-prompt-actions">
+              <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setNotificationPrompt(null)}>Later</button>
+              <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => handleTaskComplete(notificationPrompt)}>Yes, Done!</button>
+            </div>
+          </div>
+        )}
       </>
     );
   };
 
   return (
-    <StudentProvider>
+    <>
       <div className="noise-overlay" />
       {renderContent()}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-    </StudentProvider>
+    </>
   );
 }
 
 function App() {
   return (
     <AuthProvider>
-      <MainApp />
+      <StudentProvider>
+        <InnerApp />
+      </StudentProvider>
     </AuthProvider>
   );
 }

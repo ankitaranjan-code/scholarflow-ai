@@ -8,11 +8,20 @@ import api from '../../api/client';
 import './RoutineTracker.css';
 
 export default function RoutineTracker({ tasks: initialTasks, totalPoints, studentId, onTaskComplete }) {
-  const [tasks, setTasks] = useState(initialTasks);
-  const [completing, setCompleting] = useState(null); // ID of task currently being completed
+  // Normalize task shape: backend uses points_value/icon_name/is_completed_today
+  const normalize = (t) => ({
+    ...t,
+    points: t.points ?? t.points_value ?? 0,
+    icon: t.icon ?? t.icon_name ?? 'check_circle',
+    completed: t.completed ?? t.is_completed_today ?? false,
+    timeSlot: t.timeSlot ?? t.time_slot ?? '',
+  });
+
+  const [tasks, setTasks] = useState((initialTasks || []).map(normalize));
+  const [completing, setCompleting] = useState(null);
 
   const completedCount = tasks.filter(t => t.completed).length;
-  const totalCount = tasks.length;
+  const totalCount = tasks.length || 1;
   const completionPct = Math.round((completedCount / totalCount) * 100);
   const earnedToday = tasks.filter(t => t.completed).reduce((s, t) => s + t.points, 0);
   const circumference = 2 * Math.PI * 42;

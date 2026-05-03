@@ -5,6 +5,7 @@
 import './SubjectCards.css';
 
 const accentMap = {
+  new: { fill: 'fill-primary', badge: 'badge-primary', label: 'New' },
   error: { fill: 'fill-error', badge: 'badge-error', label: 'Critical' },
   primary: { fill: 'fill-primary', badge: 'badge-primary', label: 'Steady' },
   secondary: { fill: 'fill-secondary', badge: 'badge-secondary', label: 'Good' },

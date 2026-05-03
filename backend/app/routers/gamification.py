@@ -52,6 +52,48 @@ def get_routines(student_id: int, db: Session = Depends(get_db)):
     return [_build_routine_response(r, student_id, db) for r in routines]
 
 
+@router.put("/{student_id}/routines/{routine_id}", response_model=RoutineResponse)
+def update_routine(student_id: int, routine_id: int, data: RoutineCreate, db: Session = Depends(get_db)):
+    """Update an existing routine and its tasks."""
+    routine = (db.query(Routine)
+               .filter(Routine.id == routine_id, Routine.student_id == student_id)
+               .first())
+    if not routine:
+        raise HTTPException(status_code=404, detail="Routine not found")
+
+    routine.name = data.name
+    routine.description = data.description
+
+    # Simple approach: clear old tasks and add new ones
+    db.query(RoutineTask).filter(RoutineTask.routine_id == routine_id).delete()
+    
+    for i, task_data in enumerate(data.tasks):
+        task = RoutineTask(
+            routine_id=routine.id,
+            order_index=i,
+            **task_data.model_dump()
+        )
+        db.add(task)
+
+    db.commit()
+    db.refresh(routine)
+    return _build_routine_response(routine, student_id, db)
+
+
+@router.delete("/{student_id}/routines/{routine_id}")
+def delete_routine(student_id: int, routine_id: int, db: Session = Depends(get_db)):
+    """Delete a routine and all its tasks."""
+    routine = (db.query(Routine)
+               .filter(Routine.id == routine_id, Routine.student_id == student_id)
+               .first())
+    if not routine:
+        raise HTTPException(status_code=404, detail="Routine not found")
+
+    db.delete(routine)
+    db.commit()
+    return {"status": "deleted"}
+
+
 @router.post("/{student_id}/complete-task", response_model=TaskCompletionResponse)
 def complete_task(student_id: int, data: TaskCompletionRequest, db: Session = Depends(get_db)):
     """Mark a routine task as completed and award points."""

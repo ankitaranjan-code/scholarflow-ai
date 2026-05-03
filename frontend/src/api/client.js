@@ -134,12 +134,20 @@ class ApiClient {
     return this.request('/gamification/leaderboard');
   }
 
-  async getRoutines(studentId) {
+  async getGamificationRoutines(studentId) {
     return this.request(`/gamification/${studentId}/routines`);
   }
 
-  async createRoutine(studentId, data) {
+  async createGamificationRoutine(studentId, data) {
     return this.request(`/gamification/${studentId}/routines`, { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async updateGamificationRoutine(studentId, routineId, data) {
+    return this.request(`/gamification/${studentId}/routines/${routineId}`, { method: 'PUT', body: JSON.stringify(data) });
+  }
+
+  async deleteGamificationRoutine(studentId, routineId) {
+    return this.request(`/gamification/${studentId}/routines/${routineId}`, { method: 'DELETE' });
   }
 
   async completeTask(studentId, taskId) {

@@ -52,7 +52,15 @@ class LLMService:
             "casual": "Keep the tone warm, friendly, and conversational. Use emojis.",
             "study": "Be structured, focused, and academic. Provide actionable study tips and breakdown complex topics.",
             "hype": "Be extremely high energy and motivational! Use capital letters for excitement. Hype the student up!",
-            "vent": "Be very empathetic, validating, and calming. Listen and validate their feelings. Never dismiss their stress."
+            "vent": "Be very empathetic, validating, and calming. Listen and validate their feelings. Never dismiss their stress.",
+            "routine": (
+                "You are a master of productivity. Help the student design a balanced daily routine. "
+                "Include study sessions, wellness breaks (exercise/meditation), and personal time. "
+                "CRITICAL: If you suggest a routine, you MUST include a JSON block at the END of your message "
+                "wrapped in ```json ... ``` tags with the following structure: "
+                '{"type": "routine_suggestion", "name": "AI Suggested Routine", "tasks": '
+                '[{"title": "...", "category": "study/wellness/personal", "time_slot": "HH:MM", "points_value": 20}, ...]}'
+            )
         }
         
         system_instruction = base_prompt + mode_prompts.get(mode, mode_prompts["casual"])
@@ -70,6 +78,10 @@ class LLMService:
         if not self.model:
             return "My AI brain is currently disabled. Please ask an admin to configure the API key."
             
+        # Automatically switch to routine mode if keywords are detected
+        if any(kw in content.lower() for kw in ["routine", "schedule", "plan my day", "daily works"]):
+            mode = "routine"
+
         system_prompt = self.build_system_prompt(context, mode)
         prompt = f"{system_prompt}\n\nUser Message:\n{content}\n\nYour Response:"
         

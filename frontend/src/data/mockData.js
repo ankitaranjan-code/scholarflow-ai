@@ -56,9 +56,9 @@ export const insights = [
 
 // ── Routine Tasks ──
 export const routineTasks = [
-  { id: 1, title: "Morning meditation (10 min)", category: "wellness", icon: "self_improvement", points: 15, timeSlot: "06:00", completed: true },
-  { id: 2, title: "Math revision — Algebra", category: "study", icon: "calculate", points: 25, timeSlot: "07:00", completed: true },
-  { id: 3, title: "Physics problem set", category: "study", icon: "rocket_launch", points: 25, timeSlot: "09:00", completed: true },
+  { id: 1, title: "Morning meditation (10 min)", category: "wellness", icon: "self_improvement", points: 15, timeSlot: "06:00", completed: false },
+  { id: 2, title: "Math revision — Algebra", category: "study", icon: "calculate", points: 25, timeSlot: "07:00", completed: false },
+  { id: 3, title: "Physics problem set", category: "study", icon: "rocket_launch", points: 25, timeSlot: "09:00", completed: false },
   { id: 4, title: "30 min exercise", category: "wellness", icon: "fitness_center", points: 20, timeSlot: "11:00", completed: false },
   { id: 5, title: "Biology chapter review", category: "study", icon: "biotech", points: 25, timeSlot: "14:00", completed: false },
   { id: 6, title: "Chemistry lab prep", category: "study", icon: "science", points: 20, timeSlot: "16:00", completed: false },

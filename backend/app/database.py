@@ -19,9 +19,7 @@ if not DATABASE_URL.startswith("sqlite"):
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
     
-    # 2. Fix the specific typo in the hostname (vdxmg -> vdxmk)
-    if "db.cuzsogxdvdxmgkulagkr" in DATABASE_URL:
-        DATABASE_URL = DATABASE_URL.replace("db.cuzsogxdvdxmgkulagkr", "db.cuzsogxdvdxmkulagkr")
+    # 2. (Removed incorrect vdxmg -> vdxmk hostname replacement)
     
     # 3. Fix the port (Force 6543 for Supabase connection pooling)
     if "supabase.co:5432" in DATABASE_URL:

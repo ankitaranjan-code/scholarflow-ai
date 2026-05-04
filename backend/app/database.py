@@ -19,11 +19,14 @@ if not DATABASE_URL.startswith("sqlite"):
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
     
-    # 2. (Removed incorrect vdxmg -> vdxmk hostname replacement)
-    
-    # 3. Fix the port (Force 6543 for Supabase connection pooling)
-    if "supabase.co:5432" in DATABASE_URL:
-        DATABASE_URL = DATABASE_URL.replace("supabase.co:5432", "supabase.co:6543")
+    # 2. Convert IPv6 direct DB URL to IPv4 Session Pooler URL (Render doesn't support IPv6)
+    if "db.cuzsogxdvdxmgkulagkr.supabase.co" in DATABASE_URL:
+        DATABASE_URL = DATABASE_URL.replace("db.cuzsogxdvdxmgkulagkr.supabase.co", "aws-1-ap-southeast-2.pooler.supabase.com")
+        # Ensure the username includes the project ref for the pooler
+        if "postgres.cuzsogxdvdxmgkulagkr" not in DATABASE_URL:
+            DATABASE_URL = DATABASE_URL.replace("postgres:", "postgres.cuzsogxdvdxmgkulagkr:", 1)
+        # Ensure we use port 6543 for transaction pooling which works best with SQLAlchemy
+        DATABASE_URL = DATABASE_URL.replace(".pooler.supabase.com:5432", ".pooler.supabase.com:6543")
     
     # 4. Fix unencoded password (anki@528AUP -> anki%40528AUP)
     # Only replace if it looks like it's in the password section

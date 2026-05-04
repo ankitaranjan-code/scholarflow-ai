@@ -22,7 +22,10 @@ class ApiClient {
    * Core request method — all API calls go through here.
    */
   async request(endpoint, options = {}) {
-    const url = `${this.baseUrl}${endpoint}`;
+    // Strip trailing slashes from baseUrl to prevent double-slash errors (e.g. /api//auth/login)
+    const safeBaseUrl = this.baseUrl.replace(/\/+$/, '');
+    const url = `${safeBaseUrl}${endpoint}`;
+    
     const config = {
       headers: {
         'Content-Type': 'application/json',
@@ -32,8 +35,14 @@ class ApiClient {
       ...options,
     };
 
+    // Add a 30-second timeout so the spinner never hangs forever if the server is sleeping
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    config.signal = controller.signal;
+
     try {
       const response = await fetch(url, config);
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -42,6 +51,11 @@ class ApiClient {
 
       return await response.json();
     } catch (error) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        console.error(`[API] Timeout connecting to backend`);
+        throw new Error('Server is taking too long to respond. Please try again.');
+      }
       console.error(`[API] ${options.method || 'GET'} ${endpoint}:`, error.message);
       throw error;
     }

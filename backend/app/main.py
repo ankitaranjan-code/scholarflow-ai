@@ -7,17 +7,29 @@ The central entry point that wires up:
   • All API routers (Students/ML, Gamification, Chat)
   • Seed data for badges
 """
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from .database import engine, Base, SessionLocal
-from .routers import students, gamification, chat, auth, admin, academics
-from .models import *  # Ensure all models are registered with Base
+try:
+    from fastapi import FastAPI
+    from fastapi.middleware.cors import CORSMiddleware
+    from .database import engine, Base, SessionLocal
+    from .routers import students, gamification, chat, auth, admin, academics
+    from .models import *
+    print("[MAIN] All modules imported successfully.")
+except Exception as e:
+    print(f"[CRITICAL ERROR] Failed to import modules or routers: {e}")
+    import traceback
+    traceback.print_exc()
+    # Create a dummy app so the server at least starts and logs the error
+    from fastapi import FastAPI
+    app = FastAPI()
 
 # ── Create Tables ──
 try:
     Base.metadata.create_all(bind=engine)
+    print("[DB] Tables verified/created successfully.")
 except Exception as e:
     print(f"[DB] Warning: Could not create tables on startup: {e}")
+    import traceback
+    traceback.print_exc()
 
 # ── Application Instance ──
 app = FastAPI(

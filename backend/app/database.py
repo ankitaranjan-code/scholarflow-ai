@@ -26,6 +26,17 @@ if "?" in DATABASE_URL:
     else:
         DATABASE_URL = base_url
 
+# Diagnostic logging (masking password)
+try:
+    from urllib.parse import urlparse
+    parsed = urlparse(DATABASE_URL)
+    masked_url = f"{parsed.scheme}://{parsed.username}:****@{parsed.hostname}:{parsed.port}{parsed.path}"
+    if parsed.query:
+        masked_url += f"?{parsed.query}"
+    print(f"[DB] Attempting to connect with URL: {masked_url}")
+except Exception:
+    print(f"[DB] Attempting to connect (URL parsing failed for logging)")
+
 # SQLite requires check_same_thread=False, but PostgreSQL does not.
 if DATABASE_URL.startswith("sqlite"):
     engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})

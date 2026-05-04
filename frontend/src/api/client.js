@@ -3,7 +3,20 @@
  * Handles base URL, JSON serialization, auth headers, and error handling.
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+// Use environment variable, with a smart fallback to production Render URL if not on localhost
+const getApiBase = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) return envUrl;
+  
+  // If we are in production (on Vercel) but VITE_API_URL is missing, use the known Render URL
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    return 'https://scholarflow-ai.onrender.com/api';
+  }
+  
+  return 'http://localhost:8000/api';
+};
+
+const API_BASE = getApiBase();
 
 class ApiClient {
   constructor() {

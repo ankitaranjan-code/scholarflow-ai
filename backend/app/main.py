@@ -58,6 +58,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Request Logger Middleware ──
+@app.middleware("http")
+async def log_requests(request, call_next):
+    print(f"[API] Incoming: {request.method} {request.url.path}")
+    response = await call_next(request)
+    print(f"[API] Outgoing: {request.method} {request.url.path} - Status: {response.status_code}")
+    return response
+
 # ── Register Routers ──
 app.include_router(auth.router)
 app.include_router(students.router)

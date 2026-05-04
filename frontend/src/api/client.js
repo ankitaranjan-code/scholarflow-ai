@@ -1,6 +1,12 @@
 /**
  * API Client — Centralized fetch wrapper for all backend calls.
  * Handles base URL, JSON serialization, auth headers, and error handling.
+ * 
+ * Features:
+ *  • Automatic retry with exponential backoff for cold-start resilience
+ *  • 90-second timeout to survive Render free-tier cold starts
+ *  • Server warm-up ping on first load
+ *  • Observable server status for UI feedback
  */
 
 // Use environment variable, with a smart fallback to production Render URL if not on localhost
@@ -18,9 +24,36 @@ const getApiBase = () => {
 
 const API_BASE = getApiBase();
 
+// ── Server Status (observable by UI components) ──
+let _serverStatus = 'unknown'; // 'unknown' | 'waking' | 'online' | 'offline'
+const _statusListeners = new Set();
+
+function setServerStatus(status) {
+  if (_serverStatus === status) return;
+  _serverStatus = status;
+  _statusListeners.forEach(fn => fn(status));
+}
+
 class ApiClient {
   constructor() {
     this.baseUrl = API_BASE;
+    this._warmUpPromise = null;
+  }
+
+  /**
+   * Subscribe to server status changes.
+   * Returns an unsubscribe function.
+   */
+  onStatusChange(listener) {
+    _statusListeners.add(listener);
+    // Immediately notify with current status
+    listener(_serverStatus);
+    return () => _statusListeners.delete(listener);
+  }
+
+  /** Get the current server status. */
+  get serverStatus() {
+    return _serverStatus;
   }
 
   /**
@@ -33,45 +66,133 @@ class ApiClient {
 
   /**
    * Core request method — all API calls go through here.
+   * Includes retry logic for resilience against Render cold starts.
    */
   async request(endpoint, options = {}) {
     // Strip trailing slashes from baseUrl to prevent double-slash errors (e.g. /api//auth/login)
     const safeBaseUrl = this.baseUrl.replace(/\/+$/, '');
     const url = `${safeBaseUrl}${endpoint}`;
-    
-    const config = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...this.getAuthHeaders(),
-        ...options.headers,
-      },
-      ...options,
+
+    // Build headers properly — merge default, auth, and custom headers without overwrite
+    const mergedHeaders = {
+      'Content-Type': 'application/json',
+      ...this.getAuthHeaders(),
+      ...(options.headers || {}),
     };
 
-    // Add a 30-second timeout so the spinner never hangs forever if the server is sleeping
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
-    config.signal = controller.signal;
+    // Build config WITHOUT spreading options.headers again
+    const { headers: _discardedHeaders, ...restOptions } = options;
+    const config = {
+      ...restOptions,
+      headers: mergedHeaders,
+    };
 
-    try {
-      const response = await fetch(url, config);
-      clearTimeout(timeoutId);
+    // Use a generous 90-second timeout so the spinner never hangs forever,
+    // but still survives Render free-tier cold starts (which can take 30-60s)
+    const TIMEOUT_MS = 90_000;
+    const MAX_RETRIES = 2;
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `API Error: ${response.status}`);
+    let lastError;
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+      try {
+        if (attempt > 0) {
+          console.log(`[API] Retry #${attempt} for ${endpoint}...`);
+          // Exponential backoff: 2s, 4s
+          await new Promise(r => setTimeout(r, 2000 * attempt));
+        }
+
+        const response = await fetch(url, { ...config, signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        // Server responded — it's online
+        setServerStatus('online');
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.detail || `API Error: ${response.status}`);
+        }
+
+        return await response.json();
+      } catch (error) {
+        clearTimeout(timeoutId);
+        lastError = error;
+
+        if (error.name === 'AbortError') {
+          console.error(`[API] Timeout connecting to backend (attempt ${attempt + 1})`);
+          setServerStatus('offline');
+          lastError = new Error(
+            'Server is taking too long to respond. It may be starting up — please try again in a moment.'
+          );
+          // Don't retry on full timeout — it won't help
+          break;
+        }
+
+        // Network errors (DNS, refused, etc.) — retry if possible
+        if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
+          setServerStatus('waking');
+          console.warn(`[API] Network error on attempt ${attempt + 1}: ${error.message}`);
+          continue; // Will retry
+        }
+
+        // Application-level errors (4xx, 5xx) — don't retry
+        console.error(`[API] ${restOptions.method || 'GET'} ${endpoint}:`, error.message);
+        break;
       }
-
-      return await response.json();
-    } catch (error) {
-      clearTimeout(timeoutId);
-      if (error.name === 'AbortError') {
-        console.error(`[API] Timeout connecting to backend`);
-        throw new Error('Server is taking too long to respond. Please try again.');
-      }
-      console.error(`[API] ${options.method || 'GET'} ${endpoint}:`, error.message);
-      throw error;
     }
+
+    throw lastError;
+  }
+
+  /**
+   * Wake up the backend server by pinging the health endpoint.
+   * Called once when the app loads so the server is ready by the time the user logs in.
+   * Returns a promise that resolves when the server responds (or after max attempts).
+   */
+  warmUp() {
+    if (this._warmUpPromise) return this._warmUpPromise;
+
+    this._warmUpPromise = (async () => {
+      // Don't warm up localhost
+      if (this.baseUrl.includes('localhost')) {
+        setServerStatus('online');
+        return;
+      }
+
+      setServerStatus('waking');
+      console.log('[API] Sending warm-up ping to backend...');
+
+      // Ping the root health endpoint (not /api, just the root)
+      const healthUrl = this.baseUrl.replace(/\/api\/?$/, '');
+
+      for (let i = 0; i < 3; i++) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30_000);
+
+          const resp = await fetch(healthUrl, { signal: controller.signal });
+          clearTimeout(timeoutId);
+
+          if (resp.ok) {
+            setServerStatus('online');
+            console.log('[API] Backend is awake and ready.');
+            return;
+          }
+        } catch (err) {
+          console.warn(`[API] Warm-up ping attempt ${i + 1} failed:`, err.message);
+          if (i < 2) await new Promise(r => setTimeout(r, 5000));
+        }
+      }
+
+      // After 3 failed attempts, set offline but don't block the app
+      setServerStatus('offline');
+      console.warn('[API] Backend did not respond to warm-up pings.');
+    })();
+
+    return this._warmUpPromise;
   }
 
   // ── Auth Endpoints ──

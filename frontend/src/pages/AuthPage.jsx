@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/client';
 import './AuthPage.css';
 
 export default function AuthPage({ showToast, onRegisterSuccess }) {
   const { login, register } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [serverStatus, setServerStatus] = useState('unknown');
 
   // Form states
   const [username, setUsername] = useState('');
@@ -13,6 +15,16 @@ export default function AuthPage({ showToast, onRegisterSuccess }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
+
+  // Subscribe to server status so we can show warm-up feedback
+  useEffect(() => {
+    const unsub = api.onStatusChange((status) => {
+      setServerStatus(status);
+    });
+    // Trigger warm-up when the auth page mounts
+    api.warmUp();
+    return unsub;
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,10 +45,40 @@ export default function AuthPage({ showToast, onRegisterSuccess }) {
         if (onRegisterSuccess) onRegisterSuccess();
       }
     } catch (err) {
-      showToast?.(err.message || 'Authentication failed', 'error');
+      const message = err.message || 'Authentication failed';
+      showToast?.(message, 'error');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Status banner content
+  const getStatusBanner = () => {
+    if (serverStatus === 'waking') {
+      return (
+        <div className="server-status-banner waking">
+          <span className="task-spinner" style={{ width: '1rem', height: '1rem' }} />
+          <span>Server is waking up… this may take up to a minute</span>
+        </div>
+      );
+    }
+    if (serverStatus === 'offline') {
+      return (
+        <div className="server-status-banner offline">
+          <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>cloud_off</span>
+          <span>Server is starting up. Sign-in may be slow on first attempt.</span>
+        </div>
+      );
+    }
+    if (serverStatus === 'online') {
+      return (
+        <div className="server-status-banner online">
+          <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>check_circle</span>
+          <span>Server is ready</span>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -53,6 +95,9 @@ export default function AuthPage({ showToast, onRegisterSuccess }) {
             {isLogin ? 'Sign in to access your dashboard' : 'Join ScholarFlow AI today'}
           </p>
         </div>
+
+        {/* Server status banner */}
+        {getStatusBanner()}
 
         <form onSubmit={handleSubmit} className="auth-form">
           {!isLogin && (
@@ -121,7 +166,12 @@ export default function AuthPage({ showToast, onRegisterSuccess }) {
           )}
 
           <button type="submit" className="btn btn-primary auth-submit-btn" disabled={loading}>
-            {loading ? <span className="task-spinner" /> : isLogin ? 'Sign In' : 'Register'}
+            {loading ? (
+              <span className="auth-loading-content">
+                <span className="task-spinner" />
+                <span>{serverStatus === 'waking' ? 'Connecting...' : 'Signing in...'}</span>
+              </span>
+            ) : isLogin ? 'Sign In' : 'Register'}
           </button>
         </form>
 

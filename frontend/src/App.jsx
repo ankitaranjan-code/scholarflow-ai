@@ -30,6 +30,11 @@ function InnerApp() {
   const [toast, setToast] = useState(null);
   const [notificationPrompt, setNotificationPrompt] = useState(null);
 
+  // Warm up the backend server on first load so it's ready by the time the user logs in
+  useEffect(() => {
+    api.warmUp();
+  }, []);
+
   useTaskNotifier(routines, (task) => {
     // Check if we should notify
     setNotificationPrompt(task);

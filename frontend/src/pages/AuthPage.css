@@ -60,6 +60,12 @@
   justify-content: center;
 }
 
+.auth-loading-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .auth-footer {
   text-align: center;
   margin-top: -0.5rem;
@@ -75,4 +81,45 @@
 .auth-toggle-btn:hover {
   text-decoration: underline;
   background: transparent;
+}
+
+/* ── Server Status Banner ── */
+.server-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-radius: var(--radius-md, 0.5rem);
+  font-size: 0.8rem;
+  font-weight: 500;
+  animation: fadeSlideIn 0.3s ease-out;
+}
+
+.server-status-banner.waking {
+  background: rgba(255, 183, 77, 0.12);
+  color: #ffb74d;
+  border: 1px solid rgba(255, 183, 77, 0.2);
+}
+
+.server-status-banner.offline {
+  background: rgba(239, 83, 80, 0.1);
+  color: #ef9a9a;
+  border: 1px solid rgba(239, 83, 80, 0.15);
+}
+
+.server-status-banner.online {
+  background: rgba(102, 187, 106, 0.1);
+  color: #81c784;
+  border: 1px solid rgba(102, 187, 106, 0.15);
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

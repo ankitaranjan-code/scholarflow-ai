@@ -14,7 +14,10 @@ from .routers import students, gamification, chat, auth, admin, academics
 from .models import *  # Ensure all models are registered with Base
 
 # ── Create Tables ──
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    print(f"[DB] Warning: Could not create tables on startup: {e}")
 
 # ── Application Instance ──
 app = FastAPI(

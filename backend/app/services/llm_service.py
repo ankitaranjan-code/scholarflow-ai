@@ -1,6 +1,12 @@
 import os
 import json
-from google import genai
+
+try:
+    from google import genai
+    GENAI_AVAILABLE = True
+except ImportError:
+    GENAI_AVAILABLE = False
+    print("[LLM] WARNING: google-genai not available. AI chat will use fallback responses.")
 
 SETTINGS_FILE = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'settings.json')
 
@@ -32,8 +38,11 @@ class LLMService:
         if not self.api_key:
             self.api_key = "AIzaSyCTMRcSLo6xy2ospXcQMeFnPkqgTEoOafM"
             
-        if self.api_key:
-            self.client = genai.Client(api_key=self.api_key)
+        if self.api_key and GENAI_AVAILABLE:
+            try:
+                self.client = genai.Client(api_key=self.api_key)
+            except Exception as e:
+                print(f"[LLM] Failed to initialize Gemini client: {e}")
 
     def update_api_key(self, new_key: str):
         self.api_key = new_key
@@ -47,7 +56,8 @@ class LLMService:
         with open(SETTINGS_FILE, 'w') as f:
             json.dump(settings, f)
             
-        self.client = genai.Client(api_key=self.api_key)
+        if GENAI_AVAILABLE:
+            self.client = genai.Client(api_key=self.api_key)
         
     def build_system_prompt(self, context: dict, mode: str) -> str:
         base_prompt = (

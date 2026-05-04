@@ -1,7 +1,13 @@
-import joblib
-import pandas as pd
 import os
 from typing import Dict, Any
+
+try:
+    import joblib
+    import pandas as pd
+    ML_AVAILABLE = True
+except ImportError:
+    ML_AVAILABLE = False
+    print("[ML] WARNING: joblib or pandas not available. Falling back to rule-based engine.")
 
 # Path to the serialized model
 MODEL_PATH = os.path.join(os.path.dirname(__file__), '..', 'ml', 'models', 'student_performance_model.joblib')
@@ -12,6 +18,10 @@ class MLService:
         self.load_model()
 
     def load_model(self):
+        if not ML_AVAILABLE:
+            print("ML_AVAILABLE is False, skipping model load.")
+            return
+
         if os.path.exists(MODEL_PATH):
             try:
                 self.model = joblib.load(MODEL_PATH)
@@ -22,7 +32,7 @@ class MLService:
             print(f"ML Model file not found at {MODEL_PATH}")
 
     def predict(self, features: Dict[str, Any]) -> Dict[str, Any]:
-        if self.model is None:
+        if not ML_AVAILABLE or self.model is None:
             # Fallback to simple logic if model fails to load
             return self._fallback_predict(features)
         

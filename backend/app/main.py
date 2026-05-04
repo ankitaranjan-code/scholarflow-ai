@@ -58,13 +58,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Request Logger Middleware ──
+# ── Request Logger & Exception Middleware ──
+from fastapi.responses import JSONResponse
+import traceback
+
 @app.middleware("http")
 async def log_requests(request, call_next):
     print(f"[API] Incoming: {request.method} {request.url.path}")
-    response = await call_next(request)
-    print(f"[API] Outgoing: {request.method} {request.url.path} - Status: {response.status_code}")
-    return response
+    try:
+        response = await call_next(request)
+        print(f"[API] Outgoing: {request.method} {request.url.path} - Status: {response.status_code}")
+        return response
+    except Exception as e:
+        error_msg = f"{type(e).__name__}: {str(e)}"
+        print(f"[API ERROR] {error_msg}")
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal Server Error", "diagnostic_error": error_msg, "traceback": traceback.format_exc()}
+        )
 
 # ── Register Routers ──
 app.include_router(auth.router)

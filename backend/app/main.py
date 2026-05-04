@@ -38,6 +38,17 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# ── Health Check (for Render) ──
+@app.get("/")
+@app.head("/")
+def root():
+    return {
+        "name": "ScholarFlow AI",
+        "version": "1.0.0",
+        "status": "online",
+        "docs": "/docs",
+    }
+
 # ── CORS (allow React dev server and Vercel) ──
 app.add_middleware(
     CORSMiddleware,
@@ -109,11 +120,3 @@ def seed_badges():
         print(f"[SEED] Critical: Could not even initialize DB session for seeding: {e}")
 
 
-@app.get("/")
-def root():
-    return {
-        "name": "ScholarFlow AI",
-        "version": "1.0.0",
-        "status": "online",
-        "docs": "/docs",
-    }

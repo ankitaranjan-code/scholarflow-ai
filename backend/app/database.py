@@ -12,19 +12,31 @@ load_dotenv() # Load variables from .env if present
 # Fallback to local SQLite if no DATABASE_URL is provided (e.g. from Supabase)
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./scholarflow.db")
 
-# PostgreSQL fix: Supabase/Heroku often give 'postgres://' which SQLAlchemy requires 'postgresql://'
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+# ── Self-Healing Database URL Logic (for Production) ──
+# This automatically fixes common typos and port issues identified in logs
+if not DATABASE_URL.startswith("sqlite"):
+    # 1. Correct the common 'postgres' vs 'postgresql' issue
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    
+    # 2. Fix the specific typo in the hostname (vdxmg -> vdxmk)
+    if "db.cuzsogxdvdxmgkulagkr" in DATABASE_URL:
+        DATABASE_URL = DATABASE_URL.replace("db.cuzsogxdvdxmgkulagkr", "db.cuzsogxdvdxmkulagkr")
+    
+    # 3. Fix the port (Force 6543 for Supabase connection pooling)
+    if "supabase.co:5432" in DATABASE_URL:
+        DATABASE_URL = DATABASE_URL.replace("supabase.co:5432", "supabase.co:6543")
+    
+    # 4. Fix unencoded password (anki@528AUP -> anki%40528AUP)
+    # Only replace if it looks like it's in the password section
+    if ":anki@528AUP@" in DATABASE_URL:
+        DATABASE_URL = DATABASE_URL.replace(":anki@528AUP@", ":anki%40528AUP@")
 
-# Remove 'pgbouncer=true' or other query params that psycopg2 doesn't like
-if "?" in DATABASE_URL:
-    base_url, query = DATABASE_URL.split("?", 1)
-    # Keep other params if needed, but remove pgbouncer which is known to cause 'invalid dsn'
-    params = [p for p in query.split("&") if not p.startswith("pgbouncer=")]
-    if params:
-        DATABASE_URL = f"{base_url}?{'&'.join(params)}"
-    else:
-        DATABASE_URL = base_url
+    # 5. Remove 'pgbouncer=true' which crashes psycopg2
+    if "pgbouncer=true" in DATABASE_URL:
+        DATABASE_URL = DATABASE_URL.replace("pgbouncer=true", "").replace("??", "?").replace("?&", "?").rstrip("?&")
+
+# Diagnostic logging (masking password)
 
 # Diagnostic logging (masking password)
 try:

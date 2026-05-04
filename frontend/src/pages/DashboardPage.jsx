@@ -203,7 +203,10 @@ export default function DashboardPage({ showToast }) {
   return (
     <div className="dashboard-page">
       <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem 0' }}>
-        <h2 className="t-h2 text-primary">Your Dashboard</h2>
+        <div>
+          <h2 className="t-h2 text-primary">Hello {displayStudent.username || 'Scholar'}!</h2>
+          <p className="t-muted">Welcome back to your dashboard.</p>
+        </div>
         <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
           <span className="material-symbols-outlined" style={{ fontSize: '1.2rem', marginRight: '0.5rem' }}>add_chart</span>
           Weekly Report

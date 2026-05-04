@@ -134,9 +134,29 @@ def seed_badges():
                 print("[SEED] Badges seeded successfully.")
         except Exception as e:
             print(f"[SEED] Warning: Could not seed badges: {e}")
+            
+        # Seed admin user
+        try:
+            from .models.student import Student
+            from .core.security import get_password_hash
+            
+            admin_user = db.query(Student).filter(Student.username == "admin").first()
+            if not admin_user:
+                admin_user = Student(
+                    username="admin",
+                    email="admin@scholarflow.ai",
+                    password_hash=get_password_hash("admin123"),
+                    display_name="System Administrator",
+                    is_admin=True
+                )
+                db.add(admin_user)
+                db.commit()
+                print("[SEED] Admin user seeded successfully.")
+        except Exception as e:
+            print(f"[SEED] Warning: Could not seed admin user: {e}")
+            
         finally:
             db.close()
     except Exception as e:
         print(f"[SEED] Critical: Could not even initialize DB session for seeding: {e}")
-
 

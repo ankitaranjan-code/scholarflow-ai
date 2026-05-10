@@ -29,6 +29,7 @@ function InnerApp() {
   const [authMode, setAuthMode] = useState('home'); // 'home' or 'auth'
   const [toast, setToast] = useState(null);
   const [notificationPrompt, setNotificationPrompt] = useState(null);
+  const [soundError, setSoundError] = useState(false);
 
   // Warm up the backend server on first load so it's ready by the time the user logs in
   useEffect(() => {
@@ -38,6 +39,8 @@ function InnerApp() {
   useTaskNotifier(routines, (task) => {
     // Check if we should notify
     setNotificationPrompt(task);
+  }, () => {
+    setSoundError(true);
   });
 
   const handleTaskComplete = async (task) => {
@@ -126,6 +129,23 @@ function InnerApp() {
       <div className="noise-overlay" />
       {renderContent()}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      
+      {soundError && (
+        <div className="toast toast-warning" style={{ zIndex: 9999, position: 'fixed', top: '5rem', right: '1rem', padding: '1rem', background: '#ffeb3b', color: '#000', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+          <span className="material-symbols-outlined">volume_off</span>
+          <span style={{ fontWeight: 500 }}>Enable Notification Sound?</span>
+          <button 
+            style={{ background: '#000', color: '#fff', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '0.25rem', cursor: 'pointer', fontWeight: 'bold' }} 
+            onClick={() => {
+              const audio = new Audio('/notification.wav');
+              audio.play().catch(() => {});
+              setSoundError(false);
+            }}
+          >
+            Enable
+          </button>
+        </div>
+      )}
     </>
   );
 }

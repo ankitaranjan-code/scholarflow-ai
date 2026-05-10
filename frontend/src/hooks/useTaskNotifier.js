@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export function useTaskNotifier(tasks, onNotify) {
+export function useTaskNotifier(tasks, onNotify, onSoundError) {
   const notifiedTasks = useRef(new Set());
 
   // Request browser notification permission on mount
@@ -38,6 +38,20 @@ export function useTaskNotifier(tasks, onNotify) {
             // 1. Trigger In-app UI
             onNotify(task);
 
+            // Play Sound if enabled
+            const soundEnabled = localStorage.getItem('notificationSound') !== 'false';
+            if (soundEnabled) {
+              const audio = new Audio('/notification.wav');
+              audio.play().catch(e => {
+                if (e.name === 'NotAllowedError') {
+                  console.warn('Browser blocked autoplay. User interaction required.');
+                  if (onSoundError) onSoundError();
+                } else {
+                  console.error('Audio playback failed:', e);
+                }
+              });
+            }
+
             // 2. Trigger Browser Notification (if permission granted)
             if ('Notification' in window && Notification.permission === 'granted') {
               try {
@@ -59,5 +73,5 @@ export function useTaskNotifier(tasks, onNotify) {
     checkTasks(); // Check immediately
 
     return () => clearInterval(interval);
-  }, [tasks, onNotify]);
+  }, [tasks, onNotify, onSoundError]);
 }
